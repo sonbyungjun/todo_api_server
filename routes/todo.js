@@ -2,46 +2,36 @@ var express = require('express');
 var router = express.Router();
 
 
+var userDAO = require('../models/dao/userDAO');
+var todoDAO = require('../models/dao/todoDAO');
+
+
 router.get('/', function(req, res, next){
-    var data = [
-        {
-            title : '장보기',
-            regDate : '2018-10-08 13:00',
-            do : {
-                isDo : false,
-                doDate : false
-            },
-            author : 1,
-            address : '경기도 성남시 ㅇㅇㅇ ㅇㅇㅇ 마트',
-            tags : [1, 3, 6],
-            memo : 'ㅇㅇㅇ서 ㅇㅇㅇ랑 ㅇㅇㅇ장보기'
-        },
-        {
-            title : '장보기',
-            regDate : '2018-10-08 13:00',
-            do : {
-                isDo : false,
-                doDate : false
-            },
-            author : 1,
-            address : '경기도 성남시 ㅇㅇㅇ ㅇㅇㅇ 마트',
-            tags : [1, 3, 6],
-            memo : 'ㅇㅇㅇ서 ㅇㅇㅇ랑 ㅇㅇㅇ장보기'
-        },
-        {
-            title : '장보기',
-            regDate : '2018-10-08 13:00',
-            do : {
-                isDo : false,
-                doDate : false
-            },
-            author : 1,
-            address : '경기도 성남시 ㅇㅇㅇ ㅇㅇㅇ 마트',
-            tags : [1, 3, 6],
-            memo : 'ㅇㅇㅇ서 ㅇㅇㅇ랑 ㅇㅇㅇ장보기'
-        }
-    ]
-    res.json(data)
+    todoDAO.list(req.user.no, function(err, result){
+        if(err) return next(err)
+        res.json({success:true, todos:result})
+    })
 })
+
+
+router.post('/', function(req, res, next){
+    if (!req.user || !req.body.content) return next(new Error('올바른 접근이 아닙니다.'))
+    var params = {
+        writer : req.user.no,
+        content : req.body.content
+    }
+    todoDAO.add(params, function(err, result){
+        if(err) return next(err)
+        res.json({success:true, insertId : result.insertId})
+    })
+})
+
+router.post('/done', function(req, res, next){
+    todoDAO.done([req.body.done, req.body.no], function(err, result){
+        if(err) return next(err)
+        res.json({success:true})
+    })
+})
+
 
 module.exports = router;
